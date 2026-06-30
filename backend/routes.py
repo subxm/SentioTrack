@@ -14,9 +14,7 @@ from auth import (
     get_current_user,
     exchange_google_code_for_token,
     get_google_user_profile,
-    create_access_token,
-    GOOGLE_CLIENT_ID,
-    REDIRECT_URI
+    create_access_token
 )
 
 router = APIRouter()
@@ -59,14 +57,17 @@ class MockLoginRequest(BaseModel):
 @router.get("/auth/login")
 def google_login():
     """Generates Google login URL and returns it to the client."""
-    if not GOOGLE_CLIENT_ID:
-        # Return flag showing OAuth keys are not configured, so frontend can fallback to Mock Login
+    # Read dynamically so HF Spaces secrets are resolved at request time, not import time
+    client_id = os.getenv("GOOGLE_CLIENT_ID")
+    redirect_uri = os.getenv("REDIRECT_URI", "http://localhost:8000/api/auth/callback")
+
+    if not client_id:
         return {"url": None, "message": "Google Client ID is not configured."}
-    
+
     scope = "openid email profile"
     params = {
-        "client_id": GOOGLE_CLIENT_ID,
-        "redirect_uri": REDIRECT_URI,
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
         "response_type": "code",
         "scope": scope,
         "access_type": "offline",
