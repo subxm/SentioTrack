@@ -37,7 +37,7 @@ erDiagram
 
     USERS {
         int id PK
-        string email UNIQUE
+        string email
         string name
         string picture
     }
