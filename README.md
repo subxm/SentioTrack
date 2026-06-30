@@ -19,7 +19,7 @@ graph TD
     Pipeline -->|5. Word Match Scores| VADER[VADER Lexicon Engine]
     Pipeline -->|6. Neural Context Vectors| RoBERTa[RoBERTa Transformer Model]
     VADER & RoBERTa -->|7. Consensus Weighting| Aggregator[Consensus Aggregation]
-    Aggregator -->|8. Save Transaction| DB[(SQLite Database sentiment_tracker.db)]
+    Aggregator -->|8. Save Transaction| DB[(PostgreSQL Database)]
     DB -->|9. GET /api/dashboard| UI
 ```
 
@@ -27,7 +27,7 @@ graph TD
 
 ## 📊 Database Entity-Relationship (ER) Diagram
 
-The SQLite database structure showing the user authentication mapping, search queries (topics), articles (posts), and engine classifications:
+The PostgreSQL database structure showing the user authentication mapping, search queries (topics), articles (posts), and engine classifications:
 
 ```mermaid
 erDiagram
@@ -88,8 +88,8 @@ erDiagram
 
 ## 🛠️ Tech Stack
 
-- **Backend:** FastAPI (Python), Uvicorn, SQLAlchemy (SQLite ORM), PRAW (Reddit API), Requests (NewsAPI)
-- **Database:** SQLite
+- **Backend:** FastAPI (Python), Uvicorn, SQLAlchemy (PostgreSQL ORM via psycopg2), PRAW (Reddit API), Requests (NewsAPI)
+- **Database:** PostgreSQL (production) · SQLite (local fallback when `DATABASE_URL` is unset)
 - **Sentiment Engines:** NLTK VADER + HuggingFace `cardiffnlp/twitter-roberta-base-sentiment`
 - **Frontend:** Vanilla HTML5, Tailwind CSS CDN, Chart.js, Google Hanken Grotesk & Geist Mono typography
 
@@ -101,13 +101,12 @@ erDiagram
 DS/
 ├── backend/
 │   ├── .env               # API credentials & config
-│   ├── database.py        # SQLAlchemy schema & SQLite init
+│   ├── database.py        # SQLAlchemy schema & PostgreSQL/SQLite engine init
 │   ├── main.py            # FastAPI bootstrap, CORS, & SPA fallback
 │   ├── routes.py          # REST endpoints (auth, topics, analysis, dashboard)
 │   ├── scraper.py         # NewsAPI, Reddit, and MockScrapers
 │   ├── sentiment.py       # VADER and RoBERTa wrappers with fallbacks
 │   └── index.html         # High-performance Vanilla SPA template
-└── sentiment_tracker.db   # Local SQLite Database file
 ```
 
 ---
@@ -121,7 +120,10 @@ NEWSAPI_KEY=your_newsapi_key
 HF_TOKEN=your_huggingface_token
 GOOGLE_CLIENT_ID=your_google_oauth_client_id
 GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
+DATABASE_URL=postgresql://user:password@host:5432/dbname
 ```
+
+> **Note:** If `DATABASE_URL` is not set, the app automatically falls back to a local `SQLite` file (`sentiment_tracker.db`) for development purposes.
 
 ### 2. Execution Commands
 1. Open a terminal in the project directory.
