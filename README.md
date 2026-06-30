@@ -1,4 +1,15 @@
+---
+title: SentioTrack
+emoji: 📡
+colorFrom: blue
+colorTo: cyan
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # SentioTrack Intelligence
+
 
 SentioTrack is a real-time sentiment intelligence platform that aggregates articles and posts on any user-defined topic, performs dual-engine sentiment analysis (VADER Lexicon Rules + RoBERTa Deep Learning Transformer), and compiles sentiment metrics into a premium, interactive dashboard.
 

@@ -10,7 +10,7 @@ load_dotenv()
 from database import init_db
 from routes import router
 
-# Initialize the SQLite database tables
+# Initialize the database tables on startup
 init_db()
 
 app = FastAPI(
@@ -40,6 +40,7 @@ def read_root():
         return f.read()
 
 if __name__ == "__main__":
-    # Get port from environment or default to 8000
     port = int(os.getenv("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+    # reload=True only for local dev; Render manages its own restarts
+    is_dev = os.getenv("RENDER") is None
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=is_dev)
