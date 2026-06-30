@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>SentioTrack - Decode Global Sentiment Dynamics</title>
+  
+  <!-- Google Fonts: Hanken Grotesk for Headings/Body & Geist for Mono -->
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet"/>
+  <!-- Material Symbols Outlined -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <!-- Chart.js CDN for interactive visual trend charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "tertiary-fixed-dim": "#00dbe9",
+            "secondary": "#ffb3ac",
+            "on-secondary-fixed-variant": "#930010",
+            "on-tertiary-fixed": "#002022",
+            "on-surface-variant": "#c2c6d6",
+            "primary-fixed-dim": "#aec6ff",
+            "on-tertiary-container": "#002f33",
+            "error": "#ffb4ab",
+            "surface-container-highest": "#353437",
+            "outline-variant": "#424754",
+            "inverse-on-surface": "#313032",
+            "tertiary-container": "#00a0aa",
+            "on-background": "#e5e1e4",
+            "surface-container-low": "#1c1b1d",
+            "on-primary-container": "#00275e",
+            "surface-dim": "#131315",
+            "on-secondary-container": "#ffd2cd",
+            "secondary-fixed-dim": "#ffb3ac",
+            "secondary-fixed": "#ffdad6",
+            "on-surface": "#e5e1e4",
+            "surface-variant": "#353437",
+            "on-error": "#690005",
+            "outline": "#8c90a0",
+            "surface-tint": "#aec6ff",
+            "surface-bright": "#39393b",
+            "on-secondary": "#680008",
+            "surface-container-high": "#2a2a2c",
+            "secondary-container": "#c40019",
+            "on-primary-fixed": "#001a42",
+            "on-secondary-fixed": "#410003",
+            "primary": "#aec6ff",
+            "surface": "#131315",
+            "inverse-surface": "#e5e1e4",
+            "on-tertiary": "#00363a",
+            "on-primary": "#002e6b",
+            "background": "#131315",
+            "tertiary-fixed": "#7df4ff",
+            "surface-container": "#201f21",
+            "on-error-container": "#ffdad6",
+            "error-container": "#93000a",
+            "on-tertiary-fixed-variant": "#004f54",
+            "surface-container-lowest": "#0e0e10",
+            "tertiary": "#00dbe9",
+            "inverse-primary": "#005ac4",
+            "primary-container": "#4f8eff",
+            "on-primary-fixed-variant": "#004396",
+            "primary-fixed": "#d8e2ff"
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          spacing: {
+            "margin-mobile": "16px",
+            "container-max": "1440px",
+            "margin-desktop": "64px",
+            "gutter": "24px",
+            "unit": "4px"
+          },
+          fontFamily: {
+            "body-lg": ["Hanken Grotesk"],
+            "body-md": ["Hanken Grotesk"],
+            "headline-lg-mobile": ["Hanken Grotesk"],
+            "headline-md": ["Hanken Grotesk"],
+            "display-lg": ["Hanken Grotesk"],
+            "headline-lg": ["Hanken Grotesk"],
+            "label-mono": ["Geist"]
+          },
+          fontSize: {
+            "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+            "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+            "headline-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}],
+            "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "500"}],
+            "display-lg": ["72px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700"}],
+            "headline-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+            "label-mono": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500"}]
+          }
+        },
+      },
+    }
+  </script>
+  
+  <style>
+    body {
+      background-color: #0A0A0C;
+      color: #e5e1e4;
+      overflow-x: hidden;
+    }
+    .neon-glow {
+      box-shadow: 0 0 15px rgba(174, 198, 255, 0.15);
+    }
+    .input-glow:focus-within {
+      box-shadow: 0 0 20px rgba(0, 219, 233, 0.1);
+      border-color: #00dbe9;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    
+    /* Override browser autofill styling for dark theme consistency */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus, 
+    input:-webkit-autofill:active {
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: #e5e1e4 !important;
+      transition: background-color 5000s ease-in-out 0s;
+      box-shadow: inset 0 0 0 50px transparent !important;
+    }
+
+    /* Animation Keyframes for Mobile Menu slide drawer */
+    @keyframes slideIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+    .animate-slide-in {
+      animation: slideIn 0.25s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="font-body-md text-body-md selection:bg-primary/30 min-h-screen flex flex-col relative">
+
+  <!-- Toast Notification Box -->
+  <div id="toast-box" class="fixed top-24 left-1/2 -translate-x-1/2 z-[1000] bg-primary text-on-primary-container px-6 py-3.5 rounded-full shadow-2xl font-bold flex items-center gap-2 border border-outline-variant/30 hidden">
+    <span class="material-symbols-outlined text-[20px]">check_circle</span>
+    <span id="toast-text" class="text-sm"></span>
+  </div>
+
+  <!-- TopNavBar -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-background dark:bg-background border-b border-outline-variant/30">
+    <div class="flex justify-between items-center w-full px-6 md:px-margin-desktop py-4 max-w-container-max mx-auto">
+      <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('home')">
+        <span class="text-headline-md font-headline-md font-bold text-on-surface tracking-tight">SentioTrack<span class="text-secondary">.</span></span>
+      </div>
+      
+      <div class="hidden md:flex items-center gap-8 bg-surface-container/50 px-6 py-2 rounded-full border border-outline-variant/20">
+        <span id="nav-home" class="cursor-pointer text-primary font-medium border-b-2 border-primary pb-0.5 font-body-md text-body-md hover:text-primary transition-colors duration-200" onclick="navigateTo('home')">Search</span>
+        <span id="nav-about" class="cursor-pointer text-on-surface-variant font-medium font-body-md text-body-md hover:text-primary transition-colors duration-200" onclick="navigateTo('about')">About</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+
+        <!-- User profile area -->
+        <div id="user-profile-badge" class="hidden relative">
+          <!-- Clickable Avatar -->
+          <img id="user-avatar" alt="User profile avatar" class="w-9 h-9 rounded-full border border-outline-variant/40 cursor-pointer hover:border-primary transition duration-150" onclick="toggleProfileDropdown(event)"/>
+          
+          <!-- Dropdown Popover (sleek dark glassmorphism) -->
+          <div id="profile-dropdown" class="absolute right-0 mt-3 w-72 bg-[#141416]/95 border border-outline-variant/30 backdrop-blur-md rounded-2xl p-4 shadow-2xl z-50 hidden transition-all duration-200 origin-top-right scale-95 opacity-0">
+            <div class="flex items-center gap-3 mb-4">
+              <img id="dropdown-user-avatar" class="w-10 h-10 rounded-full border border-outline-variant/40" src=""/>
+              <div class="flex flex-col min-w-0">
+                <span id="dropdown-user-name" class="text-sm font-semibold text-on-surface truncate"></span>
+                <span id="dropdown-user-email" class="text-xs text-on-surface-variant truncate"></span>
+              </div>
+            </div>
+            
+            <div class="border-t border-outline-variant/20 my-3"></div>
+            
+            <!-- History section inside profile dropdown -->
+            <div class="mb-3">
+              <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider block mb-2 font-label-mono">Search History</span>
+              <div id="dropdown-history-list" class="max-h-40 overflow-y-auto space-y-1.5 pr-1 text-sm scrollbar-thin">
+                <p id="history-empty-msg" class="text-xs text-on-surface-variant italic py-2">No searches yet.</p>
+              </div>
+            </div>
+
+            <div class="border-t border-outline-variant/20 my-3"></div>
+            
+            <button class="w-full bg-surface-container/60 hover:bg-surface-container border border-outline-variant/20 text-on-surface py-2 rounded-xl text-sm font-medium hover:opacity-90 active:scale-95 transition flex items-center justify-center gap-2" onclick="handleLogout(); toggleProfileDropdown(event);">
+              <span class="material-symbols-outlined text-[16px]">logout</span>Log Out
+            </button>
+          </div>
+        </div>
+        <div id="auth-buttons" class="flex items-center gap-2">
+          <button id="btn-login" class="bg-surface-container border border-outline-variant/30 text-on-surface px-5 py-2 rounded-full font-medium hover:opacity-80 transition" onclick="handleLoginClick()">Log In</button>
+          <button id="btn-signup" class="bg-primary text-on-primary-container px-5 py-2 rounded-full font-medium hover:opacity-80 active:scale-95 transition-all" onclick="handleLoginClick()">Sign Up</button>
+        </div>
+        
+        <!-- Mobile hamburger menu button -->
+        <button class="md:hidden text-on-surface" onclick="toggleMobileDrawer(true)">
+          <span class="material-symbols-outlined text-[32px]">menu</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Drawer Menu -->
+  <div id="mobile-drawer" class="fixed inset-0 z-[100] flex hidden">
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-xs" onclick="toggleMobileDrawer(false)"></div>
+    <div class="relative flex flex-col w-80 max-w-xs bg-[#0A0A0C] border-l border-outline-variant/30 h-full ml-auto p-6 shadow-2xl z-10 animate-slide-in">
+      <div class="flex items-center justify-between mb-8">
+        <span class="text-xl font-bold text-on-surface">SentioTrack<span class="text-secondary">.</span></span>
+        <button class="text-on-surface-variant hover:text-primary" onclick="toggleMobileDrawer(false)">
+          <span class="material-symbols-outlined text-[28px]">close</span>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-6 text-lg font-medium mb-8">
+        <span id="mob-nav-home" class="cursor-pointer text-primary" onclick="navigateTo('home'); toggleMobileDrawer(false);">Search</span>
+        <span id="mob-nav-about" class="cursor-pointer text-on-surface-variant" onclick="navigateTo('about'); toggleMobileDrawer(false);">About</span>
+      </div>
+
+
+
+      <div id="mob-profile-container" class="mt-auto border-t border-outline-variant/20 pt-6">
+        <div id="mob-auth-buttons" class="flex flex-col gap-3">
+          <button class="w-full bg-surface-container border border-[#1e293b] text-on-surface py-2.5 rounded-xl text-sm font-semibold hover:opacity-85 transition" onclick="handleLoginClick(); toggleMobileDrawer(false);">Log In</button>
+          <button class="w-full bg-primary text-on-primary-container py-3 rounded-full font-bold hover:opacity-90 active:scale-95 transition" onclick="handleLoginClick(); toggleMobileDrawer(false);">Sign Up</button>
+        </div>
+        <div id="mob-profile-badge" class="hidden flex flex-col gap-4">
+          <div class="flex items-center gap-3">
+            <img id="mob-user-avatar" class="w-10 h-10 rounded-full border border-outline-variant/40" src=""/>
+            <div class="flex flex-col">
+              <span id="mob-user-name" class="text-sm font-semibold text-on-surface"></span>
+              <span id="mob-user-email" class="text-xs text-on-surface-variant"></span>
+            </div>
+          </div>
+          <button class="w-full bg-surface-container border border-outline-variant/30 text-on-surface py-2.5 rounded-xl text-sm font-semibold hover:opacity-85 transition flex items-center justify-center gap-2" onclick="handleLogout(); toggleMobileDrawer(false);">
+            <span class="material-symbols-outlined text-[18px]">logout</span>Log Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Atmospheric Background Glows -->
+  <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none z-0"></div>
+  <div class="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-tertiary/5 blur-[150px] rounded-full pointer-events-none z-0"></div>
+
+  <!-- Main Content container -->
+  <main class="relative pt-32 flex-grow z-10">
+
+    <!-- VIEW 1: HOME SEARCH PAGE -->
+    <div id="view-home" class="view-panel">
+      <!-- Hero Section -->
+      <section class="max-w-container-max mx-auto px-6 md:px-margin-desktop py-20 flex flex-col items-center text-center relative z-10">
+        <h1 class="font-display-lg text-display-lg max-w-4xl mb-8 text-on-surface">
+          Decode Global <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-tertiary">Sentiment Dynamics</span>
+        </h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mb-12">
+          Real-time emotional intelligence for an unpredictable world. Harness billion-point data streams to predict market shifts before they happen.
+        </p>
+        
+        <!-- Loading spinner status logs -->
+        <div id="loader" class="flex flex-col items-center gap-4 mb-8 hidden">
+          <div class="w-10 h-10 border-4 border-primary/25 border-t-primary rounded-full animate-spin"></div>
+          <p id="loader-step" class="text-on-surface-variant text-xs font-bold tracking-widest uppercase mt-2">Scraping data...</p>
+        </div>
+
+        <div id="error-message" class="flex items-center gap-2 bg-error-container/20 border border-error-container text-error px-6 py-3 rounded-full mb-8 max-w-2xl hidden">
+          <span class="material-symbols-outlined">error</span>
+          <span id="error-text">Could not load backend data.</span>
+        </div>
+
+        <!-- Search Console -->
+        <div class="w-full max-w-3xl relative group">
+          <div class="absolute -inset-1 bg-gradient-to-r from-primary/20 to-tertiary/20 rounded-full blur opacity-25 group-focus-within:opacity-50 transition duration-500"></div>
+          <div class="relative flex items-center bg-surface-container-high/60 backdrop-blur-xl border border-outline-variant/30 rounded-full p-2 input-glow transition-all duration-300">
+            <span class="material-symbols-outlined ml-6 text-on-surface-variant">search</span>
+            <input id="search-input" autocomplete="off" class="w-full bg-transparent border-none focus:ring-0 px-4 py-4 font-body-lg text-on-surface placeholder:text-on-surface-variant/50 outline-none" placeholder="Search keywords, tickers, or events..." type="text" onkeydown="if(event.key === 'Enter') triggerAnalysis()"/>
+            <button class="bg-primary hover:bg-primary-container text-on-primary p-4 rounded-full transition-all group/btn active:scale-95" onclick="triggerAnalysis()">
+              <span class="material-symbols-outlined group-hover/btn:-translate-y-1 transition-transform">north</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Trust / Stats Bar -->
+        <div class="mt-24 grid grid-cols-2 md:grid-cols-4 gap-8 w-full border-t border-outline-variant/10 pt-12">
+          <div class="flex flex-col items-center md:items-start">
+            <span class="font-label-mono text-label-mono text-on-surface-variant mb-2">NEWS SOURCE</span>
+            <div class="flex items-center gap-1.5">
+              <span class="font-headline-md text-headline-md text-on-surface">NewsAPI</span>
+              <span class="material-symbols-outlined text-[20px] text-primary">newspaper</span>
+            </div>
+          </div>
+          <div class="flex flex-col items-center md:items-start">
+            <span class="font-label-mono text-label-mono text-on-surface-variant mb-2">SOCIAL INTEL</span>
+            <div class="flex items-center gap-1.5">
+              <span class="font-headline-md text-headline-md text-tertiary">Reddit API</span>
+              <span class="material-symbols-outlined text-[20px] text-tertiary">forum</span>
+            </div>
+          </div>
+          <div class="flex flex-col items-center md:items-start">
+            <span class="font-label-mono text-label-mono text-on-surface-variant mb-2">LEXICON MODEL</span>
+            <div class="flex items-center gap-1.5">
+              <span class="font-headline-md text-headline-md text-on-surface">VADER</span>
+              <span class="material-symbols-outlined text-[20px] text-secondary">tune</span>
+            </div>
+          </div>
+          <div class="flex flex-col items-center md:items-start">
+            <span class="font-label-mono text-label-mono text-on-surface-variant mb-2">DEEP LEARNING</span>
+            <div class="flex items-center gap-1.5">
+              <span class="font-headline-md text-headline-md text-on-surface">RoBERTa</span>
+              <span class="material-symbols-outlined text-[20px] text-primary">psychology</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dynamic Visuals Section (Bento Grid) -->
+      <section class="max-w-container-max mx-auto px-6 md:px-margin-desktop py-20">
+        <div class="mb-8 border-b border-outline-variant/20 pb-4">
+          <h2 class="text-2xl font-bold text-on-surface inline-block border-b-2 border-primary pb-4">Intelligence Layer</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+          <!-- Large Feature -->
+          <div class="md:col-span-8 bg-surface-container-low border border-outline-variant/20 rounded-xl overflow-hidden relative group p-8 min-h-[400px]">
+            <div class="relative z-10 flex flex-col h-full justify-between">
+              <div>
+                <div class="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-6">
+                  <span class="material-symbols-outlined">public</span>
+                </div>
+                <h3 class="font-headline-lg text-headline-lg mb-4">Pulse Map</h3>
+                <p class="font-body-md text-body-md text-on-surface-variant max-w-md">Geographic heatmaps detailing sentiment clusters across 190 countries in real-time.</p>
+              </div>
+              <div class="flex items-center gap-4 mt-8">
+                <span class="flex items-center gap-1 text-primary"><span class="w-2 h-2 rounded-full bg-primary"></span> Positive</span>
+                <span class="flex items-center gap-1 text-secondary"><span class="w-2 h-2 rounded-full bg-secondary"></span> Negative</span>
+              </div>
+            </div>
+            <div class="absolute inset-0 z-0 opacity-40 group-hover:opacity-60 transition-opacity">
+              <div class="w-full h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCVO-SOCLVQQC8PHg9pIRkguh6AggxiP9rc1SExA6GXqzqN8Y2DjGJjq1casWqr0VJTQOz_OFAUlADdkUCgYeyVir7xSMGrTOvbfg_1Lbf2D3rzErfdyH5WR1z-SJW_ZBSyYxCHowPJ90IzHkzln05w-1duM6uCk_uoLWf05VEdSI8_E6KUosJYvhVaDfUy6AxzNSwDFO5sSxJc_iDLFjTUMdjHmfW6K4dUVCRvmgzNgrHYsFzyk9b-W3ycdVUrJlaisaBy9dL1Bl7D')"></div>
+            </div>
+          </div>
+          <!-- Side Bento 1 -->
+          <div class="md:col-span-4 bg-surface-container-low border border-outline-variant/20 rounded-xl p-8 flex flex-col justify-between group">
+            <div>
+              <div class="w-12 h-12 rounded-lg bg-tertiary/10 border border-tertiary/20 flex items-center justify-center text-tertiary mb-6">
+                <span class="material-symbols-outlined">trending_up</span>
+              </div>
+              <h4 class="font-headline-md text-headline-md mb-2">Trend Velocity</h4>
+              <p class="font-body-md text-body-md text-on-surface-variant">Measure the acceleration of cultural shifts before they reach critical mass on traditional media.</p>
+              <!-- CSS Bar Chart visual -->
+              <div class="flex items-end gap-1.5 h-16 mt-6 w-32">
+                <div class="bg-tertiary/30 w-4 h-[25%] rounded"></div>
+                <div class="bg-tertiary/50 w-4 h-[45%] rounded"></div>
+                <div class="bg-tertiary/75 w-4 h-[75%] rounded"></div>
+                <div class="bg-tertiary w-4 h-[100%] rounded"></div>
+                <div class="bg-tertiary/60 w-4 h-[60%] rounded"></div>
+              </div>
+            </div>
+
+          </div>
+          <!-- Side Bento 2 -->
+          <div class="md:col-span-4 bg-surface-container-low border border-outline-variant/20 rounded-xl p-8 flex flex-col justify-between group">
+            <div>
+              <div class="w-12 h-12 rounded-lg bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary mb-6">
+                <span class="material-symbols-outlined">psychology</span>
+              </div>
+              <h4 class="font-headline-md text-headline-md mb-2">Contextual AI</h4>
+              <p class="font-body-md text-body-md text-on-surface-variant">Natural language processing that understands sarcasm, slang, and emotional nuance for 98% accuracy.</p>
+            </div>
+
+          </div>
+          <!-- Side Bento 3 (Wide) -->
+          <div class="md:col-span-8 bg-surface-container-low border border-outline-variant/20 rounded-xl p-8 flex items-center justify-between overflow-hidden relative">
+            <div class="relative z-10 max-w-md">
+              <div class="w-12 h-12 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-6">
+                <span class="material-symbols-outlined">terminal</span>
+              </div>
+              <h4 class="font-headline-md text-headline-md mb-2">API Integration</h4>
+              <p class="font-body-md text-body-md text-on-surface-variant">Seamlessly pipe raw sentiment data into your existing algorithmic trading models or CRM.</p>
+            </div>
+            <div class="hidden lg:block">
+              <span class="material-symbols-outlined text-[120px] text-outline-variant/20 opacity-50">terminal</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- VIEW 2: DASHBOARD PAGE -->
+    <div id="view-dashboard" class="view-panel max-w-container-max mx-auto px-6 md:px-margin-desktop py-10 hidden">
+      
+      <!-- Dashboard Loading Indicator -->
+      <div id="db-loader" class="flex flex-col items-center justify-center py-24 gap-4">
+        <div class="w-10 h-10 border-4 border-primary/25 border-t-primary rounded-full animate-spin"></div>
+        <p class="text-on-surface-variant font-medium text-sm">Analyzing sentiment overviews...</p>
+      </div>
+
+      <!-- Dashboard Content panel -->
+      <div id="db-content" class="hidden">
+        <!-- Back Navigation & Actions -->
+        <div class="flex items-center justify-between mb-8 pb-4 border-b border-outline-variant/10">
+          <button class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition font-medium group active:scale-95 text-base" onclick="navigateTo('home')">
+            <span class="material-symbols-outlined transition-transform group-hover:-translate-x-1">arrow_back</span>
+            Back to Search
+          </button>
+        </div>
+
+        <div class="mb-8">
+          <h1 class="text-headline-lg font-headline-lg text-on-surface">Sentiment Pulse: "<span id="db-topic-keyword"></span>"</h1>
+          <p id="db-topic-time" class="text-on-surface-variant text-sm mt-1.5"></p>
+        </div>
+
+        <!-- 3 Stacked Cards (Calculator style redesign) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <!-- Vader Card -->
+          <div class="bg-surface-container border border-outline-variant/30 rounded-2xl p-6 flex flex-col justify-between min-h-[190px]">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <div class="font-label-mono text-label-mono text-on-surface-variant uppercase">VADER Lexicon Engine</div>
+                <span id="card-vader-pill" class="text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+              </div>
+              <div id="card-vader-val" class="text-4xl font-bold text-on-surface mb-4"></div>
+            </div>
+            <!-- Bar indicator -->
+            <div id="card-vader-bar-container"></div>
+          </div>
+
+          <!-- Roberta Card -->
+          <div class="bg-surface-container border border-outline-variant/30 rounded-2xl p-6 flex flex-col justify-between min-h-[190px]">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <div class="font-label-mono text-label-mono text-on-surface-variant uppercase">RoBERTa Context Model</div>
+                <span id="card-roberta-pill" class="text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+              </div>
+              <div id="card-roberta-val" class="text-4xl font-bold text-on-surface mb-4"></div>
+            </div>
+            <!-- Bar indicator -->
+            <div id="card-roberta-bar-container"></div>
+          </div>
+
+          <!-- Consensus Vibe Card (Sunset Gradient) -->
+          <div class="bg-gradient-to-br from-pink-500/90 to-orange-500/90 text-white rounded-2xl p-6 flex flex-col justify-between min-h-[190px] shadow-lg">
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <div class="font-label-mono text-label-mono opacity-80 uppercase">Consensus Vibe Score</div>
+                <span id="card-consensus-pill" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white"></span>
+              </div>
+              <div id="card-consensus-val" class="text-4xl font-extrabold mb-4"></div>
+            </div>
+            <!-- Bar indicator -->
+            <div id="card-consensus-bar-container"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+          <!-- Chart Container -->
+          <div class="lg:col-span-8 bg-surface-container-low border border-outline-variant/20 rounded-xl p-6 flex flex-col justify-between">
+            <div>
+              <h3 class="text-headline-md font-bold mb-6 flex items-center gap-2 text-on-surface">
+                <span class="material-symbols-outlined text-primary">trending_up</span> Sentiment Trend Over Time
+              </h3>
+              <div class="h-80 w-full relative">
+                <canvas id="trendChart"></canvas>
+              </div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-outline-variant/10 text-xs text-on-surface-variant flex items-start gap-2 leading-relaxed">
+              <span class="material-symbols-outlined text-primary shrink-0 text-[18px]">info</span>
+              <div>
+                <strong>Sentiment Valence Scale:</strong> Y-axis values range from <strong>+1.0 (Strongly Optimistic)</strong> to <strong>-1.0 (Strongly Pessimistic)</strong>. A score of <strong>0.0 represents a Neutral / Balanced response</strong>. Hover over any point along the curves to view detailed sentiment scores.
+              </div>
+            </div>
+          </div>
+
+          <!-- Keyword frequency clouds -->
+          <div class="lg:col-span-4 bg-surface-container-low border border-outline-variant/20 rounded-xl p-6 flex flex-col">
+            <h3 class="text-headline-md font-bold mb-6 text-on-surface">Keyword Frequency Heatmap</h3>
+            <div class="flex flex-col gap-6 flex-grow">
+              <div>
+                <div class="text-tertiary text-sm font-semibold mb-2">Positive Keywords</div>
+                <div id="cloud-pos" class="flex flex-wrap gap-2"></div>
+              </div>
+              <div>
+                <div class="text-secondary text-sm font-semibold mb-2">Negative Keywords</div>
+                <div id="cloud-neg" class="flex flex-wrap gap-2"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-8">
+          <!-- Live feed -->
+          <div class="bg-surface-container-low border border-outline-variant/20 rounded-xl p-6">
+            <h3 class="text-headline-md font-bold mb-6 text-on-surface">Live Feed Articles</h3>
+            <div id="feed-container" class="max-h-[500px] overflow-y-auto space-y-4 pr-2"></div>
+          </div>
+
+          <!-- Comparison table -->
+          <div class="bg-surface-container-low border border-outline-variant/20 rounded-xl p-6">
+            <h3 class="text-headline-md font-bold mb-6 text-on-surface">Engine Comparison</h3>
+            <div class="overflow-x-auto font-body-md text-body-md">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="border-b border-outline-variant/30 text-on-surface-variant font-medium">
+                    <th class="pb-3 w-2/3">Title</th>
+                    <th class="pb-3 w-1/6">VADER</th>
+                    <th class="pb-3 w-1/6 text-right">RoBERTa</th>
+                  </tr>
+                </thead>
+                <tbody id="comparison-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: ABOUT PAGE -->
+    <div id="view-about" class="view-panel max-w-4xl mx-auto px-6 py-10 hidden">
+      <h1 class="text-headline-lg font-bold text-center mb-8 text-on-surface">About SentioTrack</h1>
+      
+      <!-- Project Purpose Panel -->
+      <div class="mb-12 bg-gradient-to-br from-primary/5 to-tertiary/5 border border-primary/20 rounded-2xl p-6 md:p-8 relative overflow-hidden">
+        <!-- Subtle glow -->
+        <div class="absolute -right-24 -top-24 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-24 -bottom-24 w-48 h-48 bg-tertiary/10 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <h2 class="text-xl font-bold text-on-surface mb-6 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">rocket_launch</span> Project Overview &amp; Purpose
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm leading-relaxed text-on-surface-variant">
+          <div>
+            <h3 class="font-bold text-on-surface text-base mb-2 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-primary text-[18px]">target</span> What is SentioTrack meant for?
+            </h3>
+            <p class="mb-3">
+              SentioTrack is a real-time sentiment intelligence platform designed to bridge the gap between raw news coverage and actionable decision metrics. 
+            </p>
+            <p>
+              By automatically scraping global articles and social posts for any given keyword, the platform filters noise, analyzes emotional tone, and compiles chronological metrics to plot moving-average sentiment trends.
+            </p>
+          </div>
+          <div>
+            <h3 class="font-bold text-on-surface text-base mb-2 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-tertiary text-[18px]">build</span> Why was it built?
+            </h3>
+            <p class="mb-3">
+              Traditional sentiment analysis tools rely either on static dictionaries (which miss context and sarcasm) or heavy neural networks (which are computationally slow). 
+            </p>
+            <p>
+              SentioTrack was built to demonstrate a hybrid **Dual-Engine Consensus** approach: utilizing VADER for baseline speed and a RoBERTa Transformer model for context-aware accuracy, weighting them together to achieve optimal precision.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Core Engine Architecture Section -->
+      <div class="mb-12">
+        <h2 class="text-2xl font-bold mb-6 text-on-surface border-b border-outline-variant/20 pb-2">Core Engine Architecture</h2>
+        <div class="space-y-6">
+          
+          <!-- Step 1 -->
+          <div class="bg-surface-container-low border border-outline-variant/20 rounded-xl p-6 flex gap-6 items-start">
+            <div class="w-12 h-12 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xl shrink-0">1</div>
+            <div class="w-full">
+              <h3 class="text-lg font-bold text-on-surface mb-2">Real-Time Data Acquisition &amp; Preprocessing</h3>
+              <p class="text-on-surface-variant text-sm leading-relaxed">
+                When you search for a topic, our system automatically gathers the latest news articles and posts containing your keyword. The engine then filters the collection to remove duplicate stories, strips out junk web formatting, and organizes the raw text to prepare it for sentiment classification.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="bg-surface-container-low border border-outline-variant/20 rounded-xl p-6 flex gap-6 items-start">
+            <div class="w-12 h-12 rounded-lg bg-tertiary/10 border border-tertiary/20 flex items-center justify-center text-tertiary font-bold text-xl shrink-0">2</div>
+            <div class="w-full">
+              <h3 class="text-lg font-bold text-on-surface mb-2">Rule-Based Lexicon Analyzer (VADER)</h3>
+              <p class="text-on-surface-variant text-sm leading-relaxed">
+                The first analysis model evaluates the text using a human-curated vocabulary list where positive and negative words have pre-assigned sentiment weights. By looking at grammatical rules, capitalization (e.g., words written in all caps), exclamation points, and intensifiers (like "extremely"), it calculates a swift baseline rating of the text's emotion.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="bg-surface-container-low border border-outline-variant/20 rounded-xl p-6 flex gap-6 items-start">
+            <div class="w-12 h-12 rounded-lg bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary font-bold text-xl shrink-0">3</div>
+            <div class="w-full">
+              <h3 class="text-lg font-bold text-on-surface mb-2">Deep Learning Context Model (RoBERTa)</h3>
+              <p class="text-on-surface-variant text-sm leading-relaxed">
+                In parallel, we run a deep learning neural network model that has processed millions of social media posts to understand complex language patterns. Instead of just looking at individual words, this model evaluates how words relate to each other in context, allowing it to accurately detect sarcasm, local slang, and emotional nuances.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="bg-surface-container-low border border-outline-variant/20 rounded-xl p-6 flex gap-6 items-start">
+            <div class="w-12 h-12 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xl shrink-0">4</div>
+            <div class="w-full">
+              <h3 class="text-lg font-bold text-on-surface mb-2">Smart Consensus Aggregation</h3>
+              <p class="text-on-surface-variant text-sm leading-relaxed">
+                To resolve disagreements between the two models—such as when a simple dictionary misses sarcasm that the deep learning model catches—the system aggregates their scores. The deep learning model is given higher weight because of its advanced context-awareness, producing a balanced consensus score.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="bg-surface-container-low border border-outline-variant/20 rounded-xl p-6 flex gap-6 items-start">
+            <div class="w-12 h-12 rounded-lg bg-tertiary/10 border border-tertiary/20 flex items-center justify-center text-tertiary font-bold text-xl shrink-0">5</div>
+            <div class="w-full">
+              <h3 class="text-lg font-bold text-on-surface mb-2">Time-Series Trends &amp; Keyword Heatmaps</h3>
+              <p class="text-on-surface-variant text-sm leading-relaxed">
+                All final results are saved securely in our database. The system then compiles the ratings chronologically to plot moving-average sentiment curves over time, and counts the most frequent positive and negative key terms to display interactive keyword clouds on your dashboard.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Sentiment Engine Comparison Section -->
+      <div class="mb-12 mt-16">
+        <h2 class="text-2xl font-bold mb-6 text-on-surface border-b border-outline-variant/20 pb-2">VADER vs. RoBERTa Engines</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          
+          <!-- VADER Panel -->
+          <div class="bg-surface-container-low border border-outline-variant/20 rounded-2xl p-6 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-3 mb-4">
+                <span class="material-symbols-outlined text-primary text-[32px]">menu_book</span>
+                <div>
+                  <h3 class="text-lg font-bold text-on-surface">VADER Engine</h3>
+                  <span class="text-xs text-on-surface-variant font-label-mono uppercase tracking-wider">Valence Aware Dictionary &amp; Sentiment Reasoner</span>
+                </div>
+              </div>
+              <p class="text-on-surface-variant text-sm leading-relaxed mb-4">
+                VADER is a lexicon and rule-based sentiment analysis tool specifically attuned to sentiments expressed in social media. It combines a curated list of lexical features with general grammatical rules to determine sentiment intensity.
+              </p>
+              <ul class="text-xs text-[#8c90a0] space-y-2 mb-6">
+                <li class="flex items-start gap-2">
+                  <span class="text-primary font-bold">•</span>
+                  <span><strong>Rule-Based Heuristics:</strong> Accounts for punctuation emphasis ("GREAT!!!"), capitalization ("GREAT"), degree modifiers ("extremely great"), and contrastive conjunctions ("but").</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-primary font-bold">•</span>
+                  <span><strong>Lexicon Dictionary:</strong> Utilizes a pre-scored word association list mapped by human evaluators.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-primary font-bold">•</span>
+                  <span><strong>Ultra-Fast Scanning:</strong> Requires minimal processing power, making it incredibly fast.</span>
+                </li>
+              </ul>
+            </div>
+            <div class="bg-[#1c1b1d] rounded-xl p-3 border border-outline-variant/10 text-xs text-primary font-medium flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">speed</span>
+              Best for: High-velocity raw social streaming and instant baseline classification.
+            </div>
+          </div>
+
+          <!-- RoBERTa Panel -->
+          <div class="bg-surface-container-low border border-outline-variant/20 rounded-2xl p-6 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-3 mb-4">
+                <span class="material-symbols-outlined text-secondary text-[32px]">psychology</span>
+                <div>
+                  <h3 class="text-lg font-bold text-on-surface">RoBERTa Engine</h3>
+                  <span class="text-xs text-on-surface-variant font-label-mono uppercase tracking-wider">Robustly Optimized BERT Approach</span>
+                </div>
+              </div>
+              <p class="text-on-surface-variant text-sm leading-relaxed mb-4">
+                RoBERTa is a large language transformer model trained on massive datasets. Instead of matching words directly, it parses entire sentences to recognize contextual structures and linguistic nuances.
+              </p>
+              <ul class="text-xs text-[#8c90a0] space-y-2 mb-6">
+                <li class="flex items-start gap-2">
+                  <span class="text-secondary font-bold">•</span>
+                  <span><strong>Contextual Embeddings:</strong> Analyzes how words interact with surrounding words rather than evaluating them in isolation.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-secondary font-bold">•</span>
+                  <span><strong>Sarcasm &amp; Syntax:</strong> Detects complex grammatical structures, double negatives, ironies, and subtle contexts.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-secondary font-bold">•</span>
+                  <span><strong>Deep Learning Neural Model:</strong> Powered by transformer vectors to output highly accurate contextual probabilities.</span>
+                </li>
+              </ul>
+            </div>
+            <div class="bg-[#1c1b1d] rounded-xl p-3 border border-outline-variant/10 text-xs text-secondary font-medium flex items-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">verified</span>
+              Best for: Formal news editorial scanning, opinion pieces, and complex sentences.
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-surface-container-lowest border-t border-outline-variant/20 mt-auto">
+    <div class="flex flex-col md:flex-row justify-between items-center md:items-end w-full px-6 md:px-margin-desktop py-12 max-w-container-max mx-auto gap-8">
+      <div class="flex flex-col items-center md:items-start gap-3">
+        <span class="text-headline-md font-headline-md font-bold text-on-surface">SentioTrack</span>
+        <p class="font-body-md text-body-md text-on-surface-variant text-center md:text-left max-w-xs">
+          Advanced sentiment intelligence for the next generation of analysts.
+        </p>
+      </div>
+      <div class="pb-1">
+        <p class="font-label-mono text-label-mono text-on-surface-variant/60 text-center md:text-right">
+          © 2026 SentioTrack Intelligence. All rights reserved.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Mock Authentication Modal -->
+  <div id="mock-login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[1000] hidden">
+    <div class="bg-[#0f172a] border border-[#1e293b] p-8 rounded-xl w-[400px] shadow-2xl mx-4">
+      <h2 class="text-xl font-bold mb-2 text-white">Mock Authentication</h2>
+      <p class="text-sm text-on-surface-variant/80 mb-6">
+        No Google OAuth keys configured in `.env`. Access simulated developer profile for testing.
+      </p>
+      <div id="mock-login-error" class="bg-error-container/20 border border-error-container text-error p-3 rounded-lg text-sm mb-4 hidden"></div>
+      
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-on-surface-variant/80 font-medium">Email Address</label>
+          <input id="mock-email" type="email" required class="bg-white/5 border border-outline-variant/30 rounded-lg p-3 text-white outline-none focus:border-primary" value="developer@sentiotrack.com"/>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-on-surface-variant/80 font-medium">Display Name</label>
+          <input id="mock-name" type="text" required class="bg-white/5 border border-outline-variant/30 rounded-lg p-3 text-white outline-none focus:border-primary" value="Developer Profile"/>
+        </div>
+
+        <div class="flex gap-3 mt-2">
+          <button class="flex-1 py-3 border border-outline-variant/30 rounded-lg text-on-surface-variant hover:bg-white/5 transition" onclick="toggleMockModal(false)">Cancel</button>
+          <button class="flex-1 py-3 bg-primary text-on-primary-container rounded-lg font-bold hover:opacity-90 active:scale-95 transition" onclick="submitMockLogin()">Log In</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client-side SPA Application Logic Script -->
+  <script>
+    const API_BASE = "http://localhost:8000/api";
+    let token = localStorage.getItem('token') || '';
+    let user = null;
+    let historyTopics = [];
+    let latestTopicId = null;
+    let activeView = 'home';
+    let currentChart = null;
+
+    // 1. Initial Lifecycle Hooks
+    window.addEventListener('DOMContentLoaded', async () => {
+      // Extract callback token if present
+      const queryParams = new URLSearchParams(window.location.search);
+      const redirectToken = queryParams.get('token');
+      if (redirectToken) {
+        localStorage.setItem('token', redirectToken);
+        token = redirectToken;
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      await checkAuthSession();
+      await fetchSearchHistory();
+    });
+
+    // 2. Auth Session Check
+    async function checkAuthSession() {
+      if (!token) {
+        user = null;
+        updateAuthUI();
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          user = await res.json();
+        } else {
+          handleLogout();
+        }
+      } catch (err) {
+        console.warn("Failed to sync session with backend", err);
+      }
+      updateAuthUI();
+    }
+
+    function updateSearchPlaceholder() {
+      const input = document.getElementById('search-input');
+      if (input) {
+        if (user) {
+          input.placeholder = "Search keywords, tickers, or events...";
+        } else {
+          input.placeholder = "Please log in or sign up to search topics...";
+        }
+      }
+    }
+
+    function updateAuthUI() {
+      const authButtons = document.getElementById('auth-buttons');
+      const mobAuthButtons = document.getElementById('mob-auth-buttons');
+      const profileBadge = document.getElementById('user-profile-badge');
+      const mobProfileBadge = document.getElementById('mob-profile-badge');
+
+      if (user) {
+        if (authButtons) authButtons.classList.add('hidden');
+        if (mobAuthButtons) mobAuthButtons.classList.add('hidden');
+        profileBadge.classList.remove('hidden');
+        mobProfileBadge.classList.remove('hidden');
+
+        document.getElementById('user-avatar').src = user.picture || "https://api.dicebear.com/7.x/bottts/svg";
+        document.getElementById('dropdown-user-avatar').src = user.picture || "https://api.dicebear.com/7.x/bottts/svg";
+        document.getElementById('dropdown-user-name').innerText = user.name;
+        document.getElementById('dropdown-user-email').innerText = user.email;
+        
+        document.getElementById('mob-user-avatar').src = user.picture || "https://api.dicebear.com/7.x/bottts/svg";
+        document.getElementById('mob-user-name').innerText = user.name;
+        document.getElementById('mob-user-email').innerText = user.email;
+      } else {
+        if (authButtons) authButtons.classList.remove('hidden');
+        if (mobAuthButtons) mobAuthButtons.classList.remove('hidden');
+        profileBadge.classList.add('hidden');
+        mobProfileBadge.classList.add('hidden');
+      }
+      
+      updateSearchPlaceholder();
+    }
+
+    function toggleProfileDropdown(event) {
+      if (event) event.stopPropagation();
+      const dropdown = document.getElementById('profile-dropdown');
+      if (!dropdown) return;
+      
+      const isHidden = dropdown.classList.contains('hidden');
+      if (isHidden) {
+        dropdown.classList.remove('hidden');
+        setTimeout(() => {
+          dropdown.classList.remove('scale-95', 'opacity-0');
+          dropdown.classList.add('scale-100', 'opacity-100');
+        }, 10);
+      } else {
+        dropdown.classList.remove('scale-100', 'opacity-100');
+        dropdown.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+          dropdown.classList.add('hidden');
+        }, 150);
+      }
+    }
+
+    // Close dropdown on clicking outside
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('profile-dropdown');
+      const avatar = document.getElementById('user-avatar');
+      if (dropdown && !dropdown.classList.contains('hidden') && e.target !== avatar && !dropdown.contains(e.target)) {
+        toggleProfileDropdown();
+      }
+    });
+
+    async function handleLoginClick() {
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.url) {
+            window.location.href = data.url;
+          } else {
+            toggleMockModal(true);
+          }
+        } else {
+          toggleMockModal(true);
+        }
+      } catch (err) {
+        toggleMockModal(true);
+      }
+    }
+
+    function toggleMockModal(open) {
+      const modal = document.getElementById('mock-login-modal');
+      const err = document.getElementById('mock-login-error');
+      err.classList.add('hidden');
+      if (open) {
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    async function submitMockLogin() {
+      const email = document.getElementById('mock-email').value.trim();
+      const name = document.getElementById('mock-name').value.trim();
+      const errBox = document.getElementById('mock-login-error');
+      errBox.classList.add('hidden');
+
+      if (!email) {
+        errBox.innerText = "Email is required";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/mock-login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          localStorage.setItem('token', data.token);
+          token = data.token;
+          user = data.user;
+          updateAuthUI();
+          toggleMockModal(false);
+          await fetchSearchHistory();
+          showToast("Mock Developer Logged In Successfully!");
+        } else {
+          const data = await res.json();
+          errBox.innerText = data.detail || "Mock login failed";
+          errBox.classList.remove('hidden');
+        }
+      } catch (err) {
+        errBox.innerText = "Connection to backend failed";
+        errBox.classList.remove('hidden');
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('token');
+      token = '';
+      user = null;
+      historyTopics = [];
+      latestTopicId = null;
+      updateAuthUI();
+      
+      const listContainer = document.getElementById('dropdown-history-list');
+      if (listContainer) {
+        listContainer.innerHTML = `<p class="text-xs text-on-surface-variant italic py-2">No searches yet.</p>`;
+      }
+      
+      // Update locks
+      const navDb = document.getElementById('nav-dashboard');
+      const mobNavDb = document.getElementById('mob-nav-dashboard');
+      const navDbLock = document.getElementById('nav-dashboard-lock');
+      const mobNavDbLock = document.getElementById('mob-nav-dashboard-lock');
+
+      if (navDb) navDb.classList.add('opacity-50');
+      if (mobNavDb) mobNavDb.classList.add('opacity-50');
+      if (navDbLock) navDbLock.classList.remove('hidden');
+      if (mobNavDbLock) mobNavDbLock.classList.remove('hidden');
+
+      navigateTo('home');
+      showToast("Logged out successfully");
+    }
+
+    // 3. Search History Fetch
+    async function fetchSearchHistory() {
+      try {
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        
+        const res = await fetch(`${API_BASE}/topics`, { headers });
+        if (res.ok) {
+          historyTopics = await res.json();
+          populateHistoryList();
+        }
+      } catch (err) {
+        console.warn("Failed to fetch topics history", err);
+      }
+    }
+
+    function formatTopicTime(dateStr) {
+      if (!dateStr) return '';
+      if (!dateStr.endsWith('Z') && !dateStr.includes('+')) {
+        dateStr += 'Z';
+      }
+      return new Date(dateStr).toLocaleString([], {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    }
+
+    function populateHistoryList() {
+      const listContainer = document.getElementById('dropdown-history-list');
+      if (!listContainer) return;
+      
+      listContainer.innerHTML = '';
+
+      if (historyTopics.length > 0) {
+        latestTopicId = historyTopics[0].id;
+        
+        // Unlock Dashboard link
+        const navDb = document.getElementById('nav-dashboard');
+        const mobNavDb = document.getElementById('mob-nav-dashboard');
+        const navDbLock = document.getElementById('nav-dashboard-lock');
+        const mobNavDbLock = document.getElementById('mob-nav-dashboard-lock');
+
+        if (navDb) navDb.classList.remove('opacity-50');
+        if (mobNavDb) mobNavDb.classList.remove('opacity-50');
+        if (navDbLock) navDbLock.classList.add('hidden');
+        if (mobNavDbLock) mobNavDbLock.classList.add('hidden');
+
+        historyTopics.forEach(t => {
+          const item = document.createElement('div');
+          item.className = "flex items-center justify-between hover:bg-white/5 px-2.5 py-2 rounded-xl cursor-pointer text-on-surface transition-all duration-150 border border-transparent hover:border-outline-variant/10";
+          item.onclick = (e) => {
+            loadHistoryTopic(t.id);
+            toggleProfileDropdown();
+          };
+          
+          const dateObj = new Date(t.created_at.endsWith('Z') || t.created_at.includes('+') ? t.created_at : t.created_at + 'Z');
+          const shortTime = `${dateObj.getMonth() + 1}/${dateObj.getDate()}, ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+
+          item.innerHTML = `
+            <span class="font-medium truncate max-w-[140px]">${t.keyword}</span>
+            <span class="text-[10px] text-on-surface-variant shrink-0 font-label-mono">${shortTime}</span>
+          `;
+          listContainer.appendChild(item);
+        });
+      } else {
+        listContainer.innerHTML = `<p class="text-xs text-on-surface-variant italic py-2">No searches yet.</p>`;
+      }
+    }
+
+    function loadHistoryTopic(topicId) {
+      if (topicId) {
+        latestTopicId = topicId;
+        navigateTo('dashboard');
+      }
+    }
+
+    // 4. SPA Route Navigation
+    function navigateTo(view) {
+      activeView = view;
+      
+      // Hide all panels
+      document.getElementById('view-home').classList.add('hidden');
+      document.getElementById('view-dashboard').classList.add('hidden');
+      document.getElementById('view-about').classList.add('hidden');
+
+      // Toggle TopNavBar and body padding top
+      const navbar = document.querySelector('nav');
+      const mainEl = document.querySelector('main');
+      if (view === 'dashboard') {
+        if (navbar) navbar.classList.add('hidden');
+        if (mainEl) {
+          mainEl.classList.remove('pt-32');
+          mainEl.classList.add('pt-12');
+        }
+      } else {
+        if (navbar) navbar.classList.remove('hidden');
+        if (mainEl) {
+          mainEl.classList.remove('pt-12');
+          mainEl.classList.add('pt-32');
+        }
+      }
+
+      // Update nav link styles
+      updateNavStyles('nav-home', 'mob-nav-home', view === 'home');
+      updateNavStyles('nav-dashboard', 'mob-nav-dashboard', view === 'dashboard');
+      updateNavStyles('nav-about', 'mob-nav-about', view === 'about');
+
+      if (view === 'home') {
+        document.getElementById('view-home').classList.remove('hidden');
+      } else if (view === 'dashboard') {
+        if (!latestTopicId) {
+          // If no search has been run, block and go home
+          showToast("Search a topic first to unlock the dashboard!");
+          navigateTo('home');
+          return;
+        }
+        document.getElementById('view-dashboard').classList.remove('hidden');
+        loadDashboardMetrics(latestTopicId);
+      } else if (view === 'about') {
+        document.getElementById('view-about').classList.remove('hidden');
+      }
+    }
+
+    function updateNavStyles(deskId, mobId, isActive) {
+      const deskEl = document.getElementById(deskId);
+      const mobEl = document.getElementById(mobId);
+
+      if (isActive) {
+        if (deskEl) deskEl.className = "cursor-pointer text-primary font-medium border-b-2 border-primary pb-0.5 font-body-md text-body-md hover:text-primary transition-colors duration-200";
+        if (mobEl) mobEl.className = "cursor-pointer text-primary";
+      } else {
+        if (deskEl) deskEl.className = "cursor-pointer text-on-surface-variant font-medium font-body-md text-body-md hover:text-primary transition-colors duration-200";
+        if (mobEl) mobEl.className = "cursor-pointer text-on-surface-variant hover:text-primary";
+      }
+    }
+
+    // 5. Trigger Analysis Scraping & Scoring
+    async function triggerAnalysis() {
+      if (!user) {
+        showToast("Please log in or sign up first to search topics!");
+        handleLoginClick();
+        return;
+      }
+      const input = document.getElementById('search-input');
+      const keyword = input.value.trim();
+      const loader = document.getElementById('loader');
+      const loaderStep = document.getElementById('loader-step');
+      const errBox = document.getElementById('error-message');
+      
+      if (!keyword) return;
+
+      loader.classList.remove('hidden');
+      errBox.classList.add('hidden');
+      input.disabled = true;
+      loaderStep.innerText = "Scraping news articles...";
+
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch(`${API_BASE}/analyze`, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({ keyword, source: 'news', limit: 15 })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          loaderStep.innerText = "Finalizing calculations...";
+          latestTopicId = data.topic_id;
+          await fetchSearchHistory();
+          input.value = '';
+          navigateTo('dashboard');
+        } else {
+          const data = await res.json();
+          showError(data.detail || "Analysis pipeline failed");
+        }
+      } catch (err) {
+        showError("Could not connect to backend server. Make sure main.py is running.");
+      } finally {
+        loader.classList.add('hidden');
+        input.disabled = false;
+      }
+    }
+
+    function showError(msg) {
+      const errBox = document.getElementById('error-message');
+      const errText = document.getElementById('error-text');
+      errText.innerText = msg;
+      errBox.classList.remove('hidden');
+    }
+
+    // 6. Fetch and Render Dashboard Metrics
+    async function loadDashboardMetrics(topicId) {
+      const dbLoader = document.getElementById('db-loader');
+      const dbContent = document.getElementById('db-content');
+
+      if (dbLoader) dbLoader.classList.remove('hidden');
+      if (dbContent) dbContent.classList.add('hidden');
+
+      try {
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const res = await fetch(`${API_BASE}/dashboard/${topicId}`, { headers });
+        if (res.ok) {
+          const data = await res.json();
+          renderDashboard(data);
+          if (dbContent) dbContent.classList.remove('hidden');
+        } else if (res.status === 403) {
+          showToast("You do not have permission to access this search history dashboard.");
+          navigateTo('home');
+        } else {
+          showToast("Failed to load dashboard metrics");
+        }
+      } catch (err) {
+        console.error("Dashboard fetch error:", err);
+      } finally {
+        if (dbLoader) dbLoader.classList.add('hidden');
+      }
+    }
+
+    function getSentimentBadgeClass(label) {
+      if (label === 'positive') return 'bg-[#00dbe9]/10 text-[#00dbe9]';
+      if (label === 'negative') return 'bg-[#ffb3ac]/10 text-[#ffb3ac]';
+      return 'bg-outline-variant/10 text-on-surface-variant';
+    }
+
+    function renderDashboard(data) {
+      const { topic, summary, trend_data, model_comparison, heatmap_data, live_feed } = data;
+
+      // Text Fields
+      document.getElementById('db-topic-keyword').innerText = topic.keyword;
+      document.getElementById('db-topic-time').innerText = "Analysis initialized on " + formatTopicTime(topic.created_at);
+
+      // Card 1: VADER
+      const vaderPos = summary.vader_breakdown.positive;
+      const vaderNeu = summary.vader_breakdown.neutral;
+      const vaderNeg = summary.vader_breakdown.negative;
+      
+      document.getElementById('card-vader-val').innerText = vaderPos + "%";
+      
+      let vaderLabel = "Balanced";
+      let vaderColorClass = "bg-yellow-500/10 text-yellow-500";
+      if (vaderPos > 50) {
+        vaderLabel = "Optimistic";
+        vaderColorClass = "bg-[#00dbe9]/10 text-[#00dbe9]";
+      } else if (vaderNeg > 50) {
+        vaderLabel = "Pessimistic";
+        vaderColorClass = "bg-[#ffb3ac]/10 text-[#ffb3ac]";
+      }
+      const vaderPill = document.getElementById('card-vader-pill');
+      vaderPill.innerText = vaderLabel;
+      vaderPill.className = `text-[10px] font-bold px-2 py-0.5 rounded-full ${vaderColorClass}`;
+
+      document.getElementById('card-vader-bar-container').innerHTML = `
+        <div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+          <div class="bg-[#00dbe9] h-full" style="width: ${vaderPos}%"></div>
+          <div class="bg-outline-variant h-full" style="width: ${vaderNeu}%"></div>
+          <div class="bg-[#ffb3ac] h-full" style="width: ${vaderNeg}%"></div>
+        </div>
+        <div class="flex justify-between text-[10px] text-on-surface-variant mt-1.5 font-label-mono">
+          <span>Pos: ${vaderPos}%</span>
+          <span>Neu: ${vaderNeu}%</span>
+          <span>Neg: ${vaderNeg}%</span>
+        </div>
+      `;
+
+      // Card 2: RoBERTa
+      const robertaPos = summary.transformer_breakdown.positive;
+      const robertaNeu = summary.transformer_breakdown.neutral;
+      const robertaNeg = summary.transformer_breakdown.negative;
+
+      document.getElementById('card-roberta-val').innerText = robertaPos + "%";
+      
+      let robertaLabel = "Balanced";
+      let robertaColorClass = "bg-yellow-500/10 text-yellow-500";
+      if (robertaPos > 50) {
+        robertaLabel = "Optimistic";
+        robertaColorClass = "bg-[#00dbe9]/10 text-[#00dbe9]";
+      } else if (robertaNeg > 50) {
+        robertaLabel = "Pessimistic";
+        robertaColorClass = "bg-[#ffb3ac]/10 text-[#ffb3ac]";
+      }
+      const robertaPill = document.getElementById('card-roberta-pill');
+      robertaPill.innerText = robertaLabel;
+      robertaPill.className = `text-[10px] font-bold px-2 py-0.5 rounded-full ${robertaColorClass}`;
+
+      document.getElementById('card-roberta-bar-container').innerHTML = `
+        <div class="h-2 w-full bg-surface-container-high rounded-full overflow-hidden flex">
+          <div class="bg-[#00dbe9] h-full" style="width: ${robertaPos}%"></div>
+          <div class="bg-outline-variant h-full" style="width: ${robertaNeu}%"></div>
+          <div class="bg-[#ffb3ac] h-full" style="width: ${robertaNeg}%"></div>
+        </div>
+        <div class="flex justify-between text-[10px] text-on-surface-variant mt-1.5 font-label-mono">
+          <span>Pos: ${robertaPos}%</span>
+          <span>Neu: ${robertaNeu}%</span>
+          <span>Neg: ${robertaNeg}%</span>
+        </div>
+      `;
+
+      // Card 3: Consensus
+      const consensusPos = Math.round(0.4 * vaderPos + 0.6 * robertaPos);
+      const consensusNeu = Math.round(0.4 * vaderNeu + 0.6 * robertaNeu);
+      const consensusNeg = 100 - consensusPos - consensusNeu;
+
+      document.getElementById('card-consensus-val').innerText = consensusPos + "%";
+
+      let consensusLabel = "Balanced";
+      if (consensusPos > 50) {
+        consensusLabel = "Optimistic";
+      } else if (consensusNeg > 50) {
+        consensusLabel = "Pessimistic";
+      }
+      const consensusPill = document.getElementById('card-consensus-pill');
+      consensusPill.innerText = consensusLabel;
+
+      document.getElementById('card-consensus-bar-container').innerHTML = `
+        <div class="h-2 w-full bg-white/20 rounded-full overflow-hidden flex">
+          <div class="bg-white h-full" style="width: ${consensusPos}%"></div>
+          <div class="bg-white/40 h-full" style="width: ${consensusNeu}%"></div>
+          <div class="bg-red-400 h-full" style="width: ${consensusNeg}%"></div>
+        </div>
+        <div class="flex justify-between text-[10px] text-white/80 mt-1.5 font-label-mono">
+          <span>Pos: ${consensusPos}%</span>
+          <span>Neu: ${consensusNeu}%</span>
+          <span>Neg: ${consensusNeg}%</span>
+        </div>
+      `;
+
+      // Render Keyword Clouds
+      renderWordCloud('cloud-pos', heatmap_data.positive, true);
+      renderWordCloud('cloud-neg', heatmap_data.negative, false);
+
+      // Render live feed
+      const feedContainer = document.getElementById('feed-container');
+      feedContainer.innerHTML = '';
+      live_feed.forEach(item => {
+        const div = document.createElement('div');
+        div.className = "bg-[#1c1b1d] border border-[#424754]/30 p-5 rounded-xl flex flex-col gap-3";
+        div.innerHTML = `
+          <div class="flex justify-between items-start gap-4">
+            <h4 class="font-bold text-on-surface text-base">${item.title}</h4>
+            <a href="${item.url}" target="_blank" class="text-primary hover:underline flex items-center gap-1 text-xs shrink-0">
+              Source <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+            </a>
+          </div>
+          <p class="text-on-surface-variant text-sm line-clamp-3">${item.text}</p>
+          <div class="flex flex-wrap justify-between items-center gap-2 border-t border-[#424754]/10 pt-3 mt-1 text-xs text-on-surface-variant">
+            <span>By ${item.author || 'Anonymous'} | ${new Date(item.published_at.endsWith('Z') || item.published_at.includes('+') ? item.published_at : item.published_at + 'Z').toLocaleDateString()}</span>
+            <div class="flex gap-2">
+              <span class="bg-[#FF5656]/10 text-[#FF5656] px-2 py-0.5 rounded">VADER: ${item.vader.label} (${item.vader.compound})</span>
+              <span class="bg-[#ec4899]/10 text-[#ec4899] px-2 py-0.5 rounded">RoBERTa: ${item.transformer.label} (${item.transformer.score})</span>
+            </div>
+          </div>
+        `;
+        feedContainer.appendChild(div);
+      });
+
+      // Render comparison table
+      const tableBody = document.getElementById('comparison-table-body');
+      tableBody.innerHTML = '';
+      model_comparison.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-[#424754]/10 hover:bg-[#1c1b1d] transition-colors text-on-surface";
+        tr.innerHTML = `
+          <td class="py-3 pr-4 font-medium">${item.title}</td>
+          <td class="py-3">
+            <span class="px-2 py-0.5 rounded text-xs ${getSentimentBadgeClass(item.vader_label)}">
+              ${item.vader_label} (${item.vader_score})
+            </span>
+          </td>
+          <td class="py-3 text-right">
+            <span class="px-2 py-0.5 rounded text-xs ${getSentimentBadgeClass(item.transformer_label)}">
+              ${item.transformer_label} (${item.transformer_score})
+            </span>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+
+      // Render Chart.js line graph
+      renderChart(trend_data);
+    }
+
+    function renderWordCloud(containerId, words, isPositive) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      if (!words || words.length === 0) {
+        container.innerHTML = '<span class="text-xs text-on-surface-variant italic py-1">No keywords indexed.</span>';
+        return;
+      }
+      
+      const counts = words.map(w => w.count);
+      const maxCount = Math.max(...counts, 1);
+      const minCount = Math.min(...counts, 0);
+      const range = maxCount - minCount || 1;
+
+      words.forEach(w => {
+        const ratio = (w.count - minCount) / range; // 0 to 1
+        const span = document.createElement('span');
+        
+        let style = '';
+        if (isPositive) {
+          // Cyan base (#00dbe9)
+          const bgOpacity = 0.08 + 0.32 * ratio;
+          const borderOpacity = 0.15 + 0.45 * ratio;
+          const textOpacity = 0.65 + 0.35 * ratio;
+          style = `background-color: rgba(0, 219, 233, ${bgOpacity}); border-color: rgba(0, 219, 233, ${borderOpacity}); color: rgba(229, 225, 228, ${textOpacity});`;
+        } else {
+          // Coral Red base (#ffb3ac)
+          const bgOpacity = 0.08 + 0.32 * ratio;
+          const borderOpacity = 0.15 + 0.45 * ratio;
+          const textOpacity = 0.65 + 0.35 * ratio;
+          style = `background-color: rgba(255, 179, 172, ${bgOpacity}); border-color: rgba(255, 179, 172, ${borderOpacity}); color: rgba(229, 225, 228, ${textOpacity});`;
+        }
+
+        span.className = `px-3 py-1 rounded-full text-xs font-semibold border transition-all duration-200 hover:scale-105 cursor-default`;
+        span.style = style;
+        span.innerText = `${w.word} (${w.count})`;
+        container.appendChild(span);
+      });
+    }
+
+    // 7. Interactive Chart.js Rendering
+    function renderChart(trendData) {
+      const ctx = document.getElementById('trendChart').getContext('2d');
+      
+      // Destroy previous chart instance if exists
+      if (currentChart) {
+        currentChart.destroy();
+      }
+
+      if (!trendData || trendData.length === 0) {
+        ctx.clearRect(0, 0, 500, 500);
+        return;
+      }
+
+      // Format X-axis labels to include Month and Day
+      const labels = trendData.map(d => {
+        const parts = d.time.split(' ');
+        if (parts.length === 2) {
+          const dateParts = parts[0].split('-');
+          if (dateParts.length === 3) {
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const month = monthNames[parseInt(dateParts[1]) - 1];
+            const day = parseInt(dateParts[2]);
+            return `${month} ${day}, ${parts[1]}`;
+          }
+        }
+        return d.time;
+      });
+
+      const vaderScores = trendData.map(d => d.vader_sentiment);
+      const transformerScores = trendData.map(d => d.transformer_sentiment);
+
+      currentChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'VADER (Compound)',
+              data: vaderScores,
+              borderColor: '#FF5656',
+              backgroundColor: 'rgba(255, 86, 86, 0.1)',
+              borderWidth: 3,
+              tension: 0.3,
+              fill: false
+            },
+            {
+              label: 'RoBERTa (Transformer)',
+              data: transformerScores,
+              borderColor: '#ec4899',
+              backgroundColor: 'rgba(236, 72, 153, 0.1)',
+              borderWidth: 3,
+              tension: 0.3,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: '#e5e1e4', font: { family: 'Hanken Grotesk', size: 12 } }
+            },
+            tooltip: {
+              backgroundColor: '#141416',
+              titleColor: '#e5e1e4',
+              bodyColor: '#e5e1e4',
+              borderColor: 'rgba(140, 144, 160, 0.2)',
+              borderWidth: 1,
+              titleFont: { family: 'Hanken Grotesk', weight: 'bold', size: 12 },
+              bodyFont: { family: 'Hanken Grotesk', size: 12 },
+              padding: 12,
+              cornerRadius: 12,
+              displayColors: true,
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += context.parsed.y > 0 ? '+' + context.parsed.y : context.parsed.y;
+                  }
+                  return label;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: '#1E1E1E' },
+              ticks: { color: '#8c90a0', font: { family: 'Hanken Grotesk', size: 10 } }
+            },
+            y: {
+              grid: { color: '#1E1E1E' },
+              ticks: { color: '#8c90a0', font: { family: 'Hanken Grotesk', size: 10 } },
+              min: -1,
+              max: 1
+            }
+          }
+        }
+      });
+    }
+
+    // 8. Visual Toggle Utils
+    function toggleMobileDrawer(open) {
+      const drawer = document.getElementById('mobile-drawer');
+      if (open) {
+        drawer.classList.remove('hidden');
+      } else {
+        drawer.classList.add('hidden');
+      }
+    }
+
+    function toggleAccordion(id) {
+      const body = document.getElementById('body-' + id);
+      const arrow = document.getElementById('arrow-' + id);
+      
+      if (body.classList.contains('hidden')) {
+        body.classList.remove('hidden');
+        arrow.style.transform = 'rotate(180deg)';
+      } else {
+        body.classList.add('hidden');
+        arrow.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function showToast(message) {
+      const box = document.getElementById('toast-box');
+      const text = document.getElementById('toast-text');
+      text.innerText = message;
+      box.classList.remove('hidden');
+
+      // Clear animation classes
+      box.classList.remove('animate-bounce');
+      // trigger reflow
+      void box.offsetWidth;
+      box.classList.add('animate-bounce');
+
+      setTimeout(() => {
+        box.classList.add('hidden');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
